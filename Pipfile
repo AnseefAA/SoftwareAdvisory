@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+langchain-ibm = "*"
+langchain = "*"
+langchain-community = "*"
+fastapi = {extras = ["standard"], version = "*"}
+pydantic = "*"
+langchain-core = "*"
+gunicorn = "*"
+httpx = "*"
+rapidfuzz = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"

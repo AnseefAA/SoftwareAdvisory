@@ -1,0 +1,533 @@
+{
+    "version": "2.1.0",
+    "runs": [
+        {
+            "tool": {
+                "driver": {
+                    "name": "HCL AppScan SAST",
+                    "version": "1.0.0",
+                    "informationUri": "https://example.com/-sast",
+                    "rules": [
+                        {
+                            "id": "Authentication Bypass",
+                            "name": "AccessControl.Bypass"
+                        },
+                        {
+                            "id": "Improper Control of Dynamically-Managed Code Resources",
+                            "name": "Malicious.DynamicCode.Construction"
+                        },
+                        {
+                            "id": "PrivilegeEscalation",
+                            "name": "PrivilegeEscalation"
+                        },
+                        {
+                            "id": "Configuration",
+                            "name": "Configuration"
+                        },
+                        {
+                            "id": "Cross-Site Scripting",
+                            "name": "CrossSiteScripting"
+                        },
+                        {
+                            "id": "Injection",
+                            "name": "Injection"
+                        },
+                        {
+                            "id": "PathTraversal",
+                            "name": "PathTraversal"
+                        },
+                        {
+                            "id": "Validation Required",
+                            "name": "Validation.Required"
+                        }
+                    ]
+                }
+            },
+            "results": [
+                {
+                    "ruleId": "Authentication Bypass",
+                    "description": "It might be possible to escalate user privileges and gain administrative permissions over the web application",
+                    "threadClass": "Insufficient Authorization",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "docker-compose.yml"
+                                },
+                                "region": {
+                                    "startLine": 11
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Authentication Bypass",
+                    "description": "It might be possible to escalate user privileges and gain administrative permissions over the web application",
+                    "threadClass": "Insufficient Authorization",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "docker-compose.yml"
+                                },
+                                "region": {
+                                    "startLine": 12
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Improper Control of Dynamically-Managed Code Resources",
+                    "description": "",
+                    "threadClass": "Malicious Content Tests",
+                    "level": "warning",
+                    "message": {
+                        "text": "A backdoor or a debugging option was left behind by programmers"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "improper_control.py"
+                                },
+                                "region": {
+                                    "startLine": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PrivilegeEscalation",
+                    "description": "It might be possible to escalate user privileges and gain administrative permissions over the web application",
+                    "threadClass": "Insufficient Authentication",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "privilege_escalation.py"
+                                },
+                                "region": {
+                                    "startLine": 7
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PrivilegeEscalation",
+                    "description": "It might be possible to escalate user privileges and gain administrative permissions over the web application",
+                    "threadClass": "Insufficient Authentication",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "privilege_escalation.py"
+                                },
+                                "region": {
+                                    "startLine": 17
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PrivilegeEscalation",
+                    "description": "It might be possible to escalate user privileges and gain administrative permissions over the web application",
+                    "threadClass": "Insufficient Authentication",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "privilege_escalation.py"
+                                },
+                                "region": {
+                                    "startLine": 27
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PrivilegeEscalation",
+                    "description": "It might be possible to escalate user privileges and gain administrative permissions over the web application",
+                    "threadClass": "Insufficient Authentication",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "privilege_escalation.py"
+                                },
+                                "region": {
+                                    "startLine": 38
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Configuration",
+                    "description": "",
+                    "threadClass": "Application Misconfiguration",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "docker1/Dockerfile"
+                                },
+                                "region": {
+                                    "startLine": 4
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Configuration",
+                    "description": "It is possible to gather sensitive information about the web application such as usernames, passwords, machine name and/or sensitive file locations",
+                    "threadClass": "Application Misconfiguration",
+                    "level": "warning",
+                    "message": {
+                        "text": "Insecure web application programming or configuration"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "docker2/Dockerfile"
+                                },
+                                "region": {
+                                    "startLine": 5
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Cross-Site Scripting",
+                    "description": "It is possible to execute arbitrary code on the Web application's clients",
+                    "threadClass": "Cross-site Scripting",
+                    "level": "warning",
+                    "message": {
+                        "text": "Sanitation of hazardous characters was not performed correctly on user input"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "xss.py"
+                                },
+                                "region": {
+                                    "startLine": 9
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Cross-Site Scripting",
+                    "description": "It is possible to execute arbitrary code on the Web application's clients",
+                    "threadClass": "Cross-site Scripting",
+                    "level": "warning",
+                    "message": {
+                        "text": "Sanitation of hazardous characters was not performed correctly on user input"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "xss.py"
+                                },
+                                "region": {
+                                    "startLine": 20
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Cross-Site Scripting",
+                    "description": "It is possible to execute arbitrary code on the Web application's clients",
+                    "threadClass": "Cross-site Scripting",
+                    "level": "warning",
+                    "message": {
+                        "text": "Sanitation of hazardous characters was not performed correctly on user input"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "xss.py"
+                                },
+                                "region": {
+                                    "startLine": 30
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Cross-Site Scripting",
+                    "description": "It is possible to execute arbitrary code on the Web application's clients",
+                    "threadClass": "Cross-site Scripting",
+                    "level": "warning",
+                    "message": {
+                        "text": "Sanitation of hazardous characters was not performed correctly on user input"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "xss.py"
+                                },
+                                "region": {
+                                    "startLine": 38
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Injection",
+                    "description": "",
+                    "threadClass": "Abuse of Functionality",
+                    "level": "warning",
+                    "message": {
+                        "text": "No validation was done in order to make sure that user input matches the data type expected"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "injection.py"
+                                },
+                                "region": {
+                                    "startLine": 7
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Injection",
+                    "description": "",
+                    "threadClass": "Abuse of Functionality",
+                    "level": "warning",
+                    "message": {
+                        "text": "No validation was done in order to make sure that user input matches the data type expected"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "injection.py"
+                                },
+                                "region": {
+                                    "startLine": 15
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Injection",
+                    "description": "",
+                    "threadClass": "Abuse of Functionality",
+                    "level": "warning",
+                    "message": {
+                        "text": "No validation was done in order to make sure that user input matches the data type expected"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "injection.py"
+                                },
+                                "region": {
+                                    "startLine": 22
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Injection",
+                    "description": "",
+                    "threadClass": "Abuse of Functionality",
+                    "level": "warning",
+                    "message": {
+                        "text": "No validation was done in order to make sure that user input matches the data type expected"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "injection.py"
+                                },
+                                "region": {
+                                    "startLine": 29
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Injection",
+                    "description": "",
+                    "threadClass": "Abuse of Functionality",
+                    "level": "warning",
+                    "message": {
+                        "text": "No validation was done in order to make sure that user input matches the data type expected"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "injection.py"
+                                },
+                                "region": {
+                                    "startLine": 35
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "Injection",
+                    "description": "",
+                    "threadClass": "Abuse of Functionality",
+                    "level": "warning",
+                    "message": {
+                        "text": "No validation was done in order to make sure that user input matches the data type expected"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "injection.py"
+                                },
+                                "region": {
+                                    "startLine": 39
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PathTraversal",
+                    "description": "It is possible to access information stored in a sensitive data resource",
+                    "threadClass": "Path Traversal",
+                    "level": "warning",
+                    "message": {
+                        "text": "User input is not checked for the '..' (dot dot) string"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "path_traversal.py"
+                                },
+                                "region": {
+                                    "startLine": 10
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PathTraversal",
+                    "description": "It is possible to access information stored in a sensitive data resource",
+                    "threadClass": "Path Traversal",
+                    "level": "warning",
+                    "message": {
+                        "text": "User input is not checked for the '..' (dot dot) string"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "path_traversal.py"
+                                },
+                                "region": {
+                                    "startLine": 17
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PathTraversal",
+                    "description": "It is possible to access information stored in a sensitive data resource",
+                    "threadClass": "Path Traversal",
+                    "level": "warning",
+                    "message": {
+                        "text": "User input is not checked for the '..' (dot dot) string"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "path_traversal.py"
+                                },
+                                "region": {
+                                    "startLine": 27
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "ruleId": "PathTraversal",
+                    "description": "It is possible to access information stored in a sensitive data resource",
+                    "threadClass": "Path Traversal",
+                    "level": "warning",
+                    "message": {
+                        "text": "User input is not checked for the '..' (dot dot) string"
+                    },
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "path_traversal.py"
+                                },
+                                "region": {
+                                    "startLine": 39
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
