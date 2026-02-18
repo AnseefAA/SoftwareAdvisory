@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from app.routes.v1 import cve_routes, exposures, advisory_routes
-from langchain.globals import set_verbose, set_debug
 from fastapi.middleware.cors import CORSMiddleware
 from logging.config import dictConfig
 from app.core.config import LOGGING_CONFIG
@@ -8,9 +7,10 @@ from app.core.config import LOGGING_CONFIG
 # Apply Logging Configuration
 dictConfig(LOGGING_CONFIG)
 
-# Enable/Disable LangChain verbose
-set_debug(False)
-set_verbose(False)
+# Note: langchain.globals module has been removed in newer versions
+# Verbose/debug settings can be configured via environment variables if needed:
+# LANGCHAIN_VERBOSE=false
+# LANGCHAIN_DEBUG=false
 
 app = FastAPI(
     title="Concert GenAI POC",

@@ -1,6 +1,6 @@
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
 from langchain_ibm import WatsonxLLM
-from langchain.output_parsers.json import SimpleJsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from app.models import LLMRequest
 
 def query_llm(llm_args: LLMRequest, parser_required = True):
@@ -38,9 +38,9 @@ def query_llm(llm_args: LLMRequest, parser_required = True):
     # Create a chain combining the prompt template, WatsonxLLM
     chain = llm_args.promptTemplate | watsonx_llm
 
-    # Adds parser dynamically 
+    # Adds parser dynamically
     if parser_required:
-        chain |= SimpleJsonOutputParser()
+        chain |= JsonOutputParser()
 
     # Execute the chain with the provided prompt inputs and return the result
     return chain.invoke(llm_args.promptInputs)
