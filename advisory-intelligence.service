@@ -1,0 +1,31 @@
+[Unit]
+Description=Advisory Intelligence API Service
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/path/to/Advisory_Intelligence
+Environment="PATH=/home/YOUR_USERNAME/.pyenv/versions/3.10.12/bin:/home/YOUR_USERNAME/.pyenv/shims:/usr/local/bin:/usr/bin:/bin"
+Environment="PYENV_ROOT=/home/YOUR_USERNAME/.pyenv"
+EnvironmentFile=/path/to/Advisory_Intelligence/.env
+
+# Start command
+ExecStart=/path/to/Advisory_Intelligence/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=append:/path/to/Advisory_Intelligence/logs/advisory-intelligence.log
+StandardError=append:/path/to/Advisory_Intelligence/logs/advisory-intelligence-error.log
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
