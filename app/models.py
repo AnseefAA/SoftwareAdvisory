@@ -26,6 +26,24 @@ class RemediationStep(BaseModel):
     expected_output: str
     automation_possible: bool
 
+class TargetedRemediationRequest(BaseModel):
+    advisory_id: str
+    product: str
+    package: str
+    cve: str
+
+class TargetedRemediationResponse(BaseModel):
+    advisory_id: str
+    vendor: str
+    title: str
+    severity: str
+    product: str
+    package: str
+    cve: str
+    remediation_steps: List[RemediationStep]
+    generated_at: str
+    saved_to_database: bool
+
 class AdvisoryRemediationResponse(BaseModel):
     advisory_id: str
     vendor: str

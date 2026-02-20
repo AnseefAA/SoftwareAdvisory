@@ -43,6 +43,7 @@ async def root():
         "endpoints": {
             "docs": "/docs",
             "advisory_remediation": "/api/v1/advisory/remediation/generate",
+            "advisory_targeted_remediation": "/api/v1/advisory/remediation/generate-targeted",
             "intelligence_assess": "/api/v1/intelligence/assess",
             "intelligence_structured": "/api/v1/intelligence/structured",
             "intelligence_fetch": "/api/v1/intelligence/fetch",

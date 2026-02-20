@@ -242,4 +242,193 @@ async def generate_advisory_remediation(request: Models.AdvisoryRemediationReque
             detail=f"Internal server error: {str(e)}"
         )
 
+
+@router.post("/advisory/remediation/generate-targeted", response_model=Models.TargetedRemediationResponse)
+async def generate_targeted_remediation(request: Models.TargetedRemediationRequest):
+    """
+    Generate targeted remediation steps for a specific product/package/CVE combination within an advisory
+    
+    This API is useful when an advisory affects multiple products or CVEs, and you need
+    remediation steps specific to one combination rather than generic steps.
+    
+    Args:
+        request: Targeted remediation request with advisory_id, product, package, and cve
+    
+    Returns:
+        TargetedRemediationResponse with product-specific remediation steps
+    """
+    try:
+        advisory_id = request.advisory_id
+        logger.info(f"Generating targeted remediation for advisory: {advisory_id}, Product: {request.product}, Package: {request.package}, CVE: {request.cve}")
+        
+        # Step 1: Fetch advisory data from database
+        try:
+            logger.info(f"Calling get_advisory_by_id for {advisory_id}")
+            advisory_data = await get_advisory_by_id(advisory_id)
+            
+            if advisory_data:
+                logger.info(f"Advisory data retrieved for {advisory_id}")
+            else:
+                logger.warning(f"advisory_data is None or empty")
+                
+        except Exception as db_error:
+            logger.error(f"Database connection error for advisory {advisory_id}: {type(db_error).__name__}: {str(db_error)}")
+            raise HTTPException(
+                status_code=503,
+                detail=f"Database connection error: {str(db_error)}. Please try again later."
+            )
+        
+        if not advisory_data:
+            logger.error(f"Advisory {advisory_id} not found in database")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Advisory {advisory_id} not found in database. Please run the assess API first to populate the database."
+            )
+        
+        # Step 2: Find the specific CVE information
+        cve_info = None
+        for cve in advisory_data.get("cves", []):
+            if cve.get('cve_id') == request.cve:
+                cve_info = cve
+                break
+        
+        if not cve_info:
+            logger.warning(f"CVE {request.cve} not found in advisory {advisory_id}, using generic CVE info")
+            cve_info = {
+                "cve_id": request.cve,
+                "description": "CVE information not available in advisory",
+                "severity": "UNKNOWN",
+                "cvss_score": "N/A"
+            }
+        
+        # Step 3: Prepare targeted context for AI prompt
+        logger.info(f"Preparing targeted CVE information for {request.cve}")
+        
+        cve_description = cve_info.get('description') or 'No description available'
+        cve_severity = cve_info.get('severity') or 'UNKNOWN'
+        cve_cvss = cve_info.get('cvss_score') or 'N/A'
+        
+        # Truncate description safely
+        desc_preview = cve_description[:500] if len(cve_description) > 500 else cve_description
+        
+        cves_info = f"CVE: {request.cve}\nDescription: {desc_preview}\nSeverity: {cve_severity}\nCVSS Score: {cve_cvss}"
+        
+        # Step 4: Build targeted prompt with specific product/package/CVE
+        prompt_template = PromptTemplate(
+            input_variables=["advisory_id", "vendor", "title", "severity", "advisory_url", "cves_info", "product", "package", "metadata"],
+            template=prompts.ADVISORY_REMEDIATION_STEPS
+        )
+        
+        metadata_str = json.dumps(advisory_data.get("metadata", {}), indent=2) if advisory_data.get("metadata") else "No additional metadata available"
+        
+        prompt_inputs = {
+            "advisory_id": advisory_data["advisory_id"],
+            "vendor": advisory_data["vendor"] or "Unknown",
+            "title": advisory_data["title"] or "Security Advisory",
+            "severity": advisory_data["severity"] or "UNKNOWN",
+            "advisory_url": advisory_data["advisory_url"] or "N/A",
+            "cves_info": cves_info,
+            "product": request.product,
+            "package": request.package,
+            "metadata": metadata_str
+        }
+        
+        logger.info(f"Calling WatsonX AI to generate targeted remediation steps for {request.product}/{request.package}")
+        
+        # Call WatsonX AI with increased token limit
+        ai_response = query_llm(
+            model_id="ibm/granite-3-8b-instruct",
+            prompt_template=prompt_template,
+            prompt_inputs=prompt_inputs,
+            max_tokens=4000,
+            temperature=0.3
+        )
+        
+        logger.info(f"AI response received, length: {len(ai_response)} characters")
+        
+        # Parse AI response
+        try:
+            # Clean the response - remove markdown code blocks if present
+            cleaned_response = ai_response.strip()
+            if cleaned_response.startswith("```json"):
+                cleaned_response = cleaned_response[7:]
+            if cleaned_response.startswith("```"):
+                cleaned_response = cleaned_response[3:]
+            if cleaned_response.endswith("```"):
+                cleaned_response = cleaned_response[:-3]
+            cleaned_response = cleaned_response.strip()
+            
+            # Try to fix truncated JSON by closing incomplete structures
+            if not cleaned_response.endswith(']'):
+                logger.warning("Response appears truncated, attempting to fix JSON")
+                # Count opening and closing brackets
+                open_brackets = cleaned_response.count('[')
+                close_brackets = cleaned_response.count(']')
+                open_braces = cleaned_response.count('{')
+                close_braces = cleaned_response.count('}')
+                
+                # Add missing closing brackets/braces
+                if open_braces > close_braces:
+                    cleaned_response += '}' * (open_braces - close_braces)
+                if open_brackets > close_brackets:
+                    cleaned_response += ']' * (open_brackets - close_brackets)
+                
+                logger.info(f"Fixed JSON structure, added {open_braces - close_braces} braces and {open_brackets - close_brackets} brackets")
+            
+            remediation_steps_data = json.loads(cleaned_response)
+            
+            # Validate it's a list
+            if not isinstance(remediation_steps_data, list):
+                raise ValueError("AI response is not a JSON array")
+            
+            # Convert to Pydantic models
+            remediation_steps = [Models.RemediationStep(**step) for step in remediation_steps_data]
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response as JSON: {str(e)}")
+            logger.error(f"AI Response: {ai_response[:500]}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse AI response: {str(e)}"
+            )
+        except Exception as e:
+            logger.error(f"Error processing AI response: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error processing remediation steps: {str(e)}"
+            )
+        
+        # Step 7: Save to database (optional - can save targeted remediation separately)
+        saved = await update_advisory_remediation(
+            advisory_id=advisory_id,
+            remediation_plan=remediation_steps_data
+        )
+        
+        if not saved:
+            logger.warning(f"Failed to save targeted remediation plan to database for {advisory_id}")
+        
+        # Step 8: Return targeted response
+        return Models.TargetedRemediationResponse(
+            advisory_id=advisory_data["advisory_id"],
+            vendor=advisory_data["vendor"] or "Unknown",
+            title=advisory_data["title"] or "No title",
+            severity=advisory_data["severity"] or "UNKNOWN",
+            product=request.product,
+            package=request.package,
+            cve=request.cve,
+            remediation_steps=remediation_steps,
+            generated_at=datetime.utcnow().isoformat(),
+            saved_to_database=saved
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating targeted remediation for advisory {request.advisory_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+
 # Made with Bob
