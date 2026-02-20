@@ -19,14 +19,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/advisory/remediation/generate-targeted", response_model=Models.TargetedRemediationResponse, response_model_exclude_none=True)
-async def generate_targeted_remediation(request: Models.TargetedRemediationRequest):
+@router.post("/advisory/remediation/generate", response_model=Models.TargetedRemediationResponse, response_model_exclude_none=True)
+async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
     """
-    Generate targeted remediation steps for a specific product/package combination within an advisory
+    Generate comprehensive remediation plan for a specific advisory, product, and package combination
     
-    This API fetches CVEs from the database based on advisory_id, product, and package,
-    then generates comprehensive remediation steps including file checks, directory navigation,
-    and verification steps.
+    This API fetches advisory and CVE details from the database, then generates a complete
+    remediation plan with 14 comprehensive steps including backup, verification, patching,
+    file checks, directory navigation, and post-remediation validation.
     
     Args:
         request: Targeted remediation request with advisory_id, product, and package
