@@ -62,7 +62,59 @@ async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
                 detail=f"Advisory {advisory_id} not found in database. Please run the assess API first to populate the database."
             )
         
-        # Step 2: Get all CVEs related to this advisory, product, and package
+        # Step 2: Determine product and package (fetch from DB if not provided)
+        product = request.product
+        package = request.package
+        
+        # If product not provided, try to extract from advisory metadata
+        if not product:
+            metadata = advisory_data.get("metadata", {})
+            if isinstance(metadata, dict):
+                # Try different possible keys
+                product = (metadata.get("product") or
+                          metadata.get("affected_product") or
+                          metadata.get("platform"))
+            
+            # Fallback to vendor name if still not found
+            if not product:
+                vendor = advisory_data.get("vendor", "")
+                if vendor:
+                    product = vendor
+                else:
+                    product = "Unknown Product"
+            
+            logger.info(f"Product not provided in request, extracted from advisory: {product}")
+        
+        # If package not provided, try to extract from advisory metadata or CVEs
+        if not package:
+            metadata = advisory_data.get("metadata", {})
+            if isinstance(metadata, dict):
+                # Try different possible keys
+                package = (metadata.get("package") or
+                          metadata.get("affected_package") or
+                          metadata.get("component"))
+            
+            # If still not found, try to get from first CVE
+            if not package:
+                cves_list = advisory_data.get("cves", [])
+                if cves_list and len(cves_list) > 0:
+                    first_cve = cves_list[0]
+                    cve_title = first_cve.get("title")
+                    # Try to extract package name from CVE title
+                    # Common patterns: "CVE-2024-1234 in package_name" or "package_name: CVE-2024-1234"
+                    if cve_title and isinstance(cve_title, str):
+                        if " in " in cve_title:
+                            package = cve_title.split(" in ")[-1].split()[0]
+                        elif ":" in cve_title:
+                            package = cve_title.split(":")[0].strip()
+            
+            # Final fallback
+            if not package:
+                package = "affected packages"
+            
+            logger.info(f"Package not provided in request, extracted from advisory: {package}")
+        
+        # Step 3: Get all CVEs related to this advisory
         cves_list = advisory_data.get("cves", [])
         
         # Filter CVEs that might be related to the specific product/package
@@ -117,14 +169,14 @@ async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
                 f"Advisory: {advisory_id}\n"
                 f"Severity: {advisory_severity}\n"
                 f"Title: {advisory_title}\n"
-                f"Description: Security update for {request.package} in {request.product}\n"
+                f"Description: Security update for {package} in {product}\n"
                 f"Note: Specific CVE details not available in database. "
                 f"Remediation steps will be based on advisory information and package update best practices."
             )
         
         # Step 4: Build targeted prompt with specific product/package
         # Create products_info from product and package
-        products_info = f"Product: {request.product}\nPackage: {request.package}"
+        products_info = f"Product: {product}\nPackage: {package}"
         
         prompt_template = PromptTemplate(
             input_variables=["advisory_id", "vendor", "title", "severity", "advisory_url", "cves_info", "products_info", "metadata"],
@@ -144,7 +196,7 @@ async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
             "metadata": metadata_str
         }
         
-        logger.info(f"Calling WatsonX AI to generate targeted remediation steps for {request.product}/{request.package}")
+        logger.info(f"Calling WatsonX AI to generate remediation steps for {product}/{package}")
         
         # Call WatsonX AI with increased token limit for comprehensive steps
         ai_response = query_llm(
@@ -238,8 +290,9 @@ async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
         
         # Step 8: Determine additional metadata
         # Check if reboot is required (kernel, systemd, glibc, etc.)
+        package_lower = package.lower()
         is_reboot_required = any(
-            keyword in request.package.lower()
+            keyword in package_lower
             for keyword in ['kernel', 'systemd', 'glibc', 'dbus', 'init']
         )
         
@@ -247,9 +300,9 @@ async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
         requires_maintenance_window = is_reboot_required or highest_severity in ["CRITICAL", "HIGH"]
         
         # Determine package scope
-        package_scope = "kernel" if "kernel" in request.package.lower() else \
-                       "system" if any(s in request.package.lower() for s in ['systemd', 'glibc', 'dbus', 'init', 'pam']) else \
-                       "library" if any(s in request.package.lower() for s in ['lib', 'ssl', 'crypto']) else \
+        package_scope = "kernel" if "kernel" in package_lower else \
+                       "system" if any(s in package_lower for s in ['systemd', 'glibc', 'dbus', 'init', 'pam']) else \
+                       "library" if any(s in package_lower for s in ['lib', 'ssl', 'crypto']) else \
                        "application"
         
         # Estimate downtime
@@ -267,8 +320,8 @@ async def generate_remediation_plan(request: Models.TargetedRemediationRequest):
             vendor=advisory_data["vendor"] or "Unknown",
             title=advisory_data["title"] or "No title",
             severity=advisory_data["severity"] or "UNKNOWN",
-            product=request.product,
-            package=request.package,
+            product=product,
+            package=package,
             cve_ids=cve_ids,
             remediation_steps=remediation_steps,
             is_reboot_required=is_reboot_required,

@@ -26,10 +26,10 @@ class RemediationStep(BaseModel):
         exclude_none = True
 
 class TargetedRemediationRequest(BaseModel):
-    """Request model for targeted remediation - no CVE ID required"""
-    advisory_id: str = Field(..., description="Advisory identifier (e.g., ALAS-2024-1234)")
-    product: str = Field(..., description="Product name (e.g., Amazon Linux 2)")
-    package: str = Field(..., description="Package name (e.g., runc)")
+    """Request model for remediation plan generation"""
+    advisory_id: str = Field(..., description="Advisory identifier (e.g., RHSA-2026:2783, ALAS-2024-1234) - REQUIRED")
+    product: Optional[str] = Field(None, description="Product name (e.g., Red Hat Enterprise Linux 9). Optional - will be fetched from database if not provided.")
+    package: Optional[str] = Field(None, description="Package name (e.g., nodejs, runc). Optional - will use first affected package from advisory if not provided.")
 
 class TargetedRemediationResponse(BaseModel):
     """Response model for targeted remediation with comprehensive metadata"""
